@@ -22,7 +22,7 @@ router.post('/bookings', jwtMiddleware, createBooking);
 //get bookings
 router.get("/get-bookings", jwtMiddleware, getUserBookings);
 
-//path booking
-router.patch('/bookings/:id', jwtMiddleware, cancelBooking); // Simpler URL
+//path booking cancel
+router.put('/cancel-booking/:id', jwtMiddleware, cancelBooking);
 
 module.exports = router;

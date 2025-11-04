@@ -45,21 +45,24 @@ exports.getUserBookings = async (req, res) => {
 
 
 
-// Cancel booking
+//cancel booking
 exports.cancelBooking = async (req, res) => {
   try {
-    const { id } = req.params; // Changed from bookingId to id
-    const userEmail = req.payload;
-    const user = await userModel.findOne({ email: userEmail });
+    const bookingId = req.params.id;
+    const booking = await bookingModel.findById(bookingId);
 
-    const booking = await bookingModel.findOne({ _id: id, userId: user._id }); // id instead of bookingId
     if (!booking) return res.status(404).json("Booking not found");
 
-    booking.status = 'cancelled';
+    if (booking.status !== "confirmed") {
+      return res.status(400).json("Only confirmed bookings can be cancelled");
+    }
+
+    booking.status = "cancelled";
     await booking.save();
-    res.status(200).json(booking);
-    
+
+    res.status(200).json("Booking cancelled");
   } catch (error) {
+    console.error("Cancel booking error:", error);
     res.status(500).json({ error: error.message });
   }
 };
