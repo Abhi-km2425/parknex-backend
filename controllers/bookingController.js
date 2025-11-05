@@ -5,7 +5,7 @@ const userModel = require('../models/userModel');
 exports.createBooking = async (req, res) => {
   try {
     const userEmail = req.payload;
-    const { parkingId, vehicleNumber, startTime, endTime, totalHours, totalPrice } = req.body;
+    const { parkingId, location,vehicleNumber, startTime, endTime, totalHours, totalPrice } = req.body;
 
     // Check user exists
     const user = await userModel.findOne({ email: userEmail });
@@ -14,7 +14,8 @@ exports.createBooking = async (req, res) => {
     // Create booking (no parking validation yet)
     const newBooking = new bookingModel({
       userId: user._id,
-      parkingId, // Store as string for now
+      parkingId, 
+      location,
       vehicleNumber,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
@@ -25,6 +26,8 @@ exports.createBooking = async (req, res) => {
 
     await newBooking.save();
     res.status(201).json(newBooking);
+      console.log("Received booking data:", newBooking);
+
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,6 +36,7 @@ exports.createBooking = async (req, res) => {
 
 // Get user's bookings
 exports.getUserBookings = async (req, res) => {
+
   try {
     const userEmail = req.payload;
     const user = await userModel.findOne({ email: userEmail });
