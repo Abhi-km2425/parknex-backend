@@ -2,6 +2,8 @@ const express = require('express');
 const { registerUser, userLoginController } = require('./controllers/userController');
 const jwtMiddleware = require('./middlewares/jwtMiddleware');
 const { createBooking, getUserBookings, cancelBooking } = require('./controllers/bookingController');
+const { createParkingSpot, getAllParkingSpots, deleteParkingspot } = require('./controllers/adminController');
+const adminJwtMiddleware = require('./middlewares/adminJwtMiddleware');
 
 const router = express.Router();
 
@@ -22,7 +24,17 @@ router.post('/bookings', jwtMiddleware, createBooking);
 //get bookings
 router.get("/get-bookings", jwtMiddleware, getUserBookings);
 
-//path booking cancel
-router.put('/cancel-booking/:id', jwtMiddleware, cancelBooking);
+// Cancel booking route
+router.put('/cancel-booking/:id',cancelBooking);
+
+//.............admin....................
+router.post('/add-parking',adminJwtMiddleware,createParkingSpot)
+
+//get 
+router.get('/get-parking',getAllParkingSpots)
+
+//delete
+router.delete('/delete-slot/:id',deleteParkingspot)
+
 
 module.exports = router;

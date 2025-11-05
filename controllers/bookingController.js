@@ -53,8 +53,8 @@ exports.getUserBookings = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const booking = await bookingModel.findById(bookingId);
 
+    const booking = await bookingModel.findById(bookingId);
     if (!booking) return res.status(404).json("Booking not found");
 
     if (booking.status !== "confirmed") {
