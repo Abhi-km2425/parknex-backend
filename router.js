@@ -2,7 +2,7 @@ const express = require('express');
 const { registerUser, userLoginController } = require('./controllers/userController');
 const jwtMiddleware = require('./middlewares/jwtMiddleware');
 const { createBooking, getUserBookings, cancelBooking } = require('./controllers/bookingController');
-const { createParkingSpot, getAllParkingSpots, deleteParkingspot } = require('./controllers/adminController');
+const { createParkingSpot, getAllParkingSpots, deleteParkingspot, updateParkingSpot } = require('./controllers/adminController');
 const adminJwtMiddleware = require('./middlewares/adminJwtMiddleware');
 
 const router = express.Router();
@@ -36,5 +36,11 @@ router.get('/get-parking',getAllParkingSpots)
 //delete
 router.delete('/delete-slot/:id',deleteParkingspot)
 
+//edit
+router.put('/update-slot/:id', adminJwtMiddleware, updateParkingSpot);
+
+
+//.............public rout ui............
+router.get('/all-parking', getAllParkingSpots);
 
 module.exports = router;

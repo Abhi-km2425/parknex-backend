@@ -56,3 +56,25 @@ exports.deleteParkingspot=async(req,res)=>{
     res.status(400).json("Delete error:",error)
   }
 }
+
+//edit  controller
+exports.updateParkingSpot = async (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+
+  try {
+    const updatedSpot = await ParkingSpot.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedSpot) {
+      return res.status(404).json({ message: "Parking spot not found" });
+    }
+
+    res.status(200).json({ message: "Parking spot updated", data: updatedSpot });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ message: "Server error during update", error });
+  }
+};
