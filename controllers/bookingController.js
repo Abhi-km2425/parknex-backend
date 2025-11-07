@@ -1,20 +1,28 @@
+const { default: mongoose } = require('mongoose');
 const bookingModel = require('../models/bookingModel');
+const parkingSpotModel = require('../models/parkingSpotModel');
 const userModel = require('../models/userModel');
 
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
     const userEmail = req.payload;
-    const { parkingId, location,vehicleNumber, startTime, endTime, totalHours, totalPrice } = req.body;
+    const { parkingId, location, vehicleNumber, startTime, endTime, totalHours, totalPrice } = req.body;
 
     // Check user exists
     const user = await userModel.findOne({ email: userEmail });
     if (!user) return res.status(404).json("User not found");
 
-    // Create booking (no parking validation yet)
+    // Check parking spot availability
+    const spot = await parkingSpotModel.findById(parkingId);
+    if (!spot || spot.availableSpots <= 0) {
+      return res.status(400).json({ message: "No available spots at this location" });
+    }
+
+    // Create booking
     const newBooking = new bookingModel({
       userId: user._id,
-      parkingId, 
+      parkingId,
       location,
       vehicleNumber,
       startTime: new Date(startTime),
@@ -25,14 +33,22 @@ exports.createBooking = async (req, res) => {
     });
 
     await newBooking.save();
+
+    // Reduce available spots
+    await parkingSpotModel.findByIdAndUpdate(parkingId, {
+      $inc: { availableSpots: -1 }
+    });
+
+    console.log("Received booking data:", newBooking);
     res.status(201).json(newBooking);
-      console.log("Received booking data:", newBooking);
-
-
   } catch (error) {
+    console.error("Booking error:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
 
 // Get user's bookings
 exports.getUserBookings = async (req, res) => {
@@ -49,7 +65,6 @@ exports.getUserBookings = async (req, res) => {
 
 
 
-//cancel booking
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -64,7 +79,24 @@ exports.cancelBooking = async (req, res) => {
     booking.status = "cancelled";
     await booking.save();
 
-    res.status(200).json("Booking cancelled");
+    // Defensive check for parkingId validity
+    if (!mongoose.Types.ObjectId.isValid(booking.parkingId)) {
+      console.warn("Invalid parkingId:", booking.parkingId);
+      return res.status(400).json("Invalid parking ID format");
+    }
+
+    // Restore slot availability
+    const result = await parkingSpotModel.findOneAndUpdate(
+{ _id: new mongoose.Types.ObjectId(booking.parkingId) },
+      { $inc: { availableSpots: 1 } }
+    );
+console.log("Slot update result:", result);
+    if (!result) {
+      console.warn("Parking spot not found for ID:", booking.parkingId);
+      return res.status(404).json("Parking spot not found");
+    }
+
+    res.status(200).json("Booking cancelled and slot restored");
   } catch (error) {
     console.error("Cancel booking error:", error);
     res.status(500).json({ error: error.message });

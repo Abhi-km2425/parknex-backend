@@ -4,12 +4,12 @@ const jwtMiddleware = require('./middlewares/jwtMiddleware');
 const { createBooking, getUserBookings, cancelBooking } = require('./controllers/bookingController');
 const { createParkingSpot, getAllParkingSpots, deleteParkingspot, updateParkingSpot } = require('./controllers/adminController');
 const adminJwtMiddleware = require('./middlewares/adminJwtMiddleware');
+const { getTodayBookings, getActiveUsers, getTodayRevenue } = require('./controllers/adminDashboardController');
 
 const router = express.Router();
 
 
 
-//.........................................................//
 //.......................USER.............................//
  
 //user register 
@@ -27,6 +27,7 @@ router.get("/get-bookings", jwtMiddleware, getUserBookings);
 // Cancel booking route
 router.put('/cancel-booking/:id',cancelBooking);
 
+
 //.............admin....................
 router.post('/add-parking',adminJwtMiddleware,createParkingSpot)
 
@@ -40,7 +41,12 @@ router.delete('/delete-slot/:id',deleteParkingspot)
 router.put('/update-slot/:id', adminJwtMiddleware, updateParkingSpot);
 
 
-//.............public rout ui............
+//admins and users parking slot availability
+
+//................. admin dashboard router...................
 router.get('/all-parking', getAllParkingSpots);
+router.get('/get-user-bookings',getTodayBookings)
+router.get('/geta-active-users',getActiveUsers)
+router.get('/admin-today-revenue',getTodayRevenue)
 
 module.exports = router;
